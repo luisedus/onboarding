@@ -6,7 +6,7 @@ import 'login.dart';
 // Servicio para API
 class ApiService {
   static Future<bool> crearUsuario(Map<String, String> data) async {
-    final url = Uri.parse('http://localhost:3000/api/usuarios'); // Cambia la URL si es necesario
+  final url = Uri.parse('http://10.0.2.2:3000/api/usuarios');
 
     try {
       final response = await http.post(
@@ -29,29 +29,37 @@ class ApiService {
 }
 
 // Pantalla de registro
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
+  @override
+  _RegisterScreenState createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+
+  bool isEmailValid = true;
+  bool isPasswordValid = true;
+  bool isNameValid = true;
 
   void registrarUsuario(BuildContext context) async {
     final nombre = nameController.text.trim();
     final correo = emailController.text.trim();
     final contrasena = passwordController.text.trim();
 
-    if (nombre.isEmpty || correo.isEmpty || contrasena.isEmpty) {
+    setState(() {
+      isNameValid = nombre.isNotEmpty;
+      isEmailValid = correo.contains('@') && correo.length >= 5;
+      isPasswordValid = contrasena.length >= 6;
+    });
+
+    if (!isNameValid || !isEmailValid || !isPasswordValid) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, completa todos los campos')),
+        SnackBar(content: Text('Por favor, corrige los campos marcados')),
       );
       return;
     }
-
-    if (!correo.contains('@') || correo.length < 5) {
-      ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Correo inválido')),
-    );
-  return;
-}
 
     final success = await ApiService.crearUsuario({
       'nombre': nombre,
@@ -65,8 +73,6 @@ class RegisterScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Registro exitoso. Inicia sesión.')),
       );
-
-      // Volver al login reemplazando la pantalla actual
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -88,16 +94,25 @@ class RegisterScreen extends StatelessWidget {
           children: [
             TextField(
               controller: nameController,
-              decoration: InputDecoration(labelText: 'Nombre'),
+              decoration: InputDecoration(
+                labelText: 'Nombre',
+                errorText: isNameValid ? null : 'El nombre no puede estar vacío',
+              ),
             ),
             TextField(
               controller: emailController,
-              decoration: InputDecoration(labelText: 'Correo electrónico'),
+              decoration: InputDecoration(
+                labelText: 'Correo electrónico',
+                errorText: isEmailValid ? null : 'Correo inválido',
+              ),
             ),
             TextField(
               controller: passwordController,
               obscureText: true,
-              decoration: InputDecoration(labelText: 'Contraseña'),
+              decoration: InputDecoration(
+                labelText: 'Contraseña',
+                errorText: isPasswordValid ? null : 'Mínimo 6 caracteres',
+              ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
