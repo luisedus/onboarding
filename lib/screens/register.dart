@@ -6,7 +6,7 @@ import 'login.dart';
 // Servicio para API
 class ApiService {
   static Future<bool> crearUsuario(Map<String, String> data) async {
-  final url = Uri.parse('http://10.0.2.2:3000/api/usuarios');
+  final url = Uri.parse('http://10.0.2.2:3000/api/usuarios');//si usas emulador es esta, si no es localhost
 
     try {
       final response = await http.post(
