@@ -2,19 +2,19 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
-// Registrar nuevo usuario
-router.post('/', async (req, res) => {
-  const { nombre, correo, contrasena } = req.body;
+// registrar nuevo usuario
+router.post('/register', async (req, res) => {
+  const { username, email, pasword } = req.body;
 
-  // Validación básica
-  if (!nombre || !correo || !contrasena) {
+  // validación básica
+  if (!username || !email || !pasword) {
     return res.status(400).json({ error: 'Faltan campos requeridos' });
   }
 
   try {
     const result = await pool.query(
-      'INSERT INTO usuarios(nombre, correo, contrasena) VALUES ($1, $2, $3) RETURNING *',
-      [nombre, correo, contrasena]
+      'INSERT INTO lgk_user(username, email, pasword) VALUES ($1, $2, $3) RETURNING *',
+      [username, email, pasword]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -23,18 +23,18 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Login de usuario
+// login de usuario
 router.post('/login', async (req, res) => {
-  const { correo, contrasena } = req.body;
+  const { email, pasword } = req.body;
 
-  if (!correo || !contrasena) {
+  if (!email || !pasword) {
     return res.status(400).json({ message: 'Faltan datos' });
   }
 
   try {
     const result = await pool.query(
-      'SELECT * FROM usuarios WHERE correo = $1 AND contrasena = $2',
-      [correo, contrasena]
+'SELECT * FROM lgk_user WHERE email = $1 AND pasword = $2'
+      [email, pasword]
     );
 
     if (result.rows.length > 0) {
